@@ -1,0 +1,58 @@
+#!/bin/bash
+studentID=''
+password=''
+
+domestic='free'
+global='glb'
+disconnect='dis'
+disconnectall='disall'
+# get the default encoding of system
+encoding=$(localectl status | grep "LANG" | cut -d '.' -f 2)
+
+serverip="162.105.129.65"
+serverport="5428"
+
+range=2 # domestic -> 2 global -> 1
+operation="connect" # {connect, disconnect, disconnectall}
+
+wargs="-q -Y off -T 10 -t 3 -O - --no-check-certificate"
+url="https://$serverip:$serverport/ipgatewayofpku?uid=$studentID&password=$password&range=$range&operation=$operation&timeout=1"
+
+# args
+if [ $# == 0 ]
+then
+    echo "Usage: $0 [command]{$domestic, $global, $disconnect, $disconnectall}"
+    exit -1
+fi
+
+case $1 in
+    $domestic)
+        range=2
+        ;;
+    $global)
+        range=1
+        ;;
+    $disconnect)
+        operation="disconnect"
+        ;;
+    $disconnectall)
+        operation="disconnectall"
+        ;;
+    *)
+    echo "Usage: $0 [command]{$domestic, $global, $disconnect, $disconnectall}"
+    exit -1;
+esac
+
+# connect to server and get the reply
+status=($(wget $wargs $url | iconv -f gb2312 -t $encoding | grep "<!--IPGWCLIENT_START"))
+
+for x in ${status[*]}
+do
+    if [[ "$x" =~ IPGWCLIENT ]]
+    then
+        echo ""
+    else
+        echo $x
+    fi
+done
+
