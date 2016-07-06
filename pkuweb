@@ -7,7 +7,7 @@ global='glb'
 disconnect='dis'
 disconnectall='disall'
 # get the default encoding of system
-encoding=$(localectl status | grep "LANG" | cut -d '.' -f 2)
+encoding=$(locale | grep "LANG" | cut -d '.' -f 2)
 
 serverip="162.105.129.65"
 serverport="5428"
@@ -16,7 +16,6 @@ range=2 # domestic -> 2 global -> 1
 operation="connect" # {connect, disconnect, disconnectall}
 
 wargs="-q -Y off -T 10 -t 3 -O - --no-check-certificate"
-url="https://$serverip:$serverport/ipgatewayofpku?uid=$studentID&password=$password&range=$range&operation=$operation&timeout=1"
 
 # args
 if [ $# == 0 ]
@@ -42,6 +41,8 @@ case $1 in
     echo "Usage: $0 [command]{$domestic, $global, $disconnect, $disconnectall}"
     exit -1;
 esac
+
+url="https://$serverip:$serverport/ipgatewayofpku?uid=$studentID&password=$password&range=$range&operation=$operation&timeout=1"
 
 # connect to server and get the reply
 status=($(wget $wargs $url | iconv -f gb2312 -t $encoding | grep "<!--IPGWCLIENT_START"))
